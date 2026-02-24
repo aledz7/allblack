@@ -96,7 +96,7 @@ const SimpleBarChart = ({ data, valueKey, color }: { data: any[], valueKey: stri
   const range = maxValue - minValue || 1;
 
   return (
-    <View className="h-40 flex-row items-end justify-between gap-2 mt-4">
+    <View className="h-44 flex-row items-end justify-between gap-2 mt-4">
       {data.map((item, index) => {
         const normalizedValue = (item[valueKey] - minValue) / range;
         const height = 20 + (normalizedValue * 80); // Min 20%, Max 100%
@@ -107,7 +107,7 @@ const SimpleBarChart = ({ data, valueKey, color }: { data: any[], valueKey: stri
               className={`w-full rounded-t-sm ${color}`}
               style={{ height: `${height}%`, opacity: 0.8 + (normalizedValue * 0.2) }}
             />
-            <Text className="text-xs text-muted-foreground mt-2">{item.date}</Text>
+            <Text className="text-sm text-muted-foreground mt-2">{item.date}</Text>
           </View>
         );
       })}
@@ -125,30 +125,36 @@ export default function AnalysisScreen() {
       </View>
 
       <ScrollView 
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 128, gap: 24 }}
+        contentContainerStyle={{ 
+          paddingHorizontal: 24, 
+          paddingBottom: 128, 
+          gap: 24, 
+          alignItems: 'center',
+        }}
         showsVerticalScrollIndicator={false}
       >
+        <View style={{ width: '100%', maxWidth: 1400 }}>
         {/* Probability Card */}
         <View className="bg-card rounded-2xl p-6 border border-border">
           <View className="flex-row items-center gap-3 mb-4">
-            <Target className="text-primary" size={24} />
-            <Text className="text-lg font-semibold text-foreground">Probabilidade de Meta</Text>
+            <Target className="text-primary" size={28} />
+            <Text className="text-xl font-semibold text-foreground">Probabilidade de Meta</Text>
           </View>
           
           <View className="flex-row items-end justify-between">
             <View>
               <Text className="text-5xl font-bold text-primary">{probabilityData.current}%</Text>
-              <Text className="text-muted-foreground mt-1">chance de atingir 21km em 1h50</Text>
+              <Text className="text-base text-muted-foreground mt-2">chance de atingir 21km em 1h50</Text>
             </View>
-            <View className="bg-secondary px-3 py-1 rounded-full">
-              <Text className="text-primary text-sm font-medium">Alta</Text>
+            <View className="bg-secondary px-4 py-1.5 rounded-full">
+              <Text className="text-primary text-base font-medium">Alta</Text>
             </View>
           </View>
 
-          <View className="mt-4 pt-4 border-t border-border">
+          <View className="mt-5 pt-4 border-t border-border">
             <View className="flex-row items-center gap-2">
-              <TrendingUp className="text-green-400" size={16} />
-              <Text className="text-sm text-muted-foreground">
+              <TrendingUp className="text-green-400" size={20} />
+              <Text className="text-base text-muted-foreground">
                 Tendência positiva: +5% desde o último teste
               </Text>
             </View>
@@ -158,26 +164,26 @@ export default function AnalysisScreen() {
         {/* Training Zones */}
         <View>
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-xl font-bold text-foreground">Zonas de Treino</Text>
-            <Activity className="text-muted-foreground" size={20} />
+            <Text className="text-2xl font-bold text-foreground">Zonas de Treino</Text>
+            <Activity className="text-muted-foreground" size={24} />
           </View>
 
-          <View className="gap-3">
+          <View className="gap-4">
             {zones.map((zone) => (
-              <View key={zone.id} className="bg-card rounded-xl p-4 border border-border flex-row items-center justify-between">
+              <View key={zone.id} className="bg-card rounded-xl p-5 border border-border flex-row items-center justify-between">
                 <View className="flex-1">
                   <View className="flex-row items-center gap-2">
-                    <View className={`w-2 h-2 rounded-full bg-current ${zone.color}`} />
-                    <Text className="font-semibold text-foreground">{zone.name}</Text>
+                    <View className={`w-3 h-3 rounded-full bg-current ${zone.color}`} />
+                    <Text className="text-base font-semibold text-foreground">{zone.name}</Text>
                   </View>
-                  <Text className="text-sm text-muted-foreground mt-1">{zone.description}</Text>
-                  <Text className="text-xs text-muted-foreground mt-1">{zone.range}</Text>
+                  <Text className="text-base text-muted-foreground mt-2">{zone.description}</Text>
+                  <Text className="text-sm text-muted-foreground mt-1">{zone.range}</Text>
                 </View>
-                <View className="bg-secondary px-3 py-2 rounded-lg">
-                  <Text className={`text-sm font-mono font-medium ${zone.color}`}>
+                <View className="bg-secondary px-4 py-2.5 rounded-lg">
+                  <Text className={`text-base font-medium ${zone.color}`}>
                     {zone.paceMin} - {zone.paceMax}
                   </Text>
-                  <Text className="text-xs text-muted-foreground text-center mt-1">min/km</Text>
+                  <Text className="text-sm text-muted-foreground text-center mt-1">min/km</Text>
                 </View>
               </View>
             ))}
@@ -187,15 +193,15 @@ export default function AnalysisScreen() {
         {/* Evolution Charts */}
         <View>
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-xl font-bold text-foreground">Evolução</Text>
-            <Award className="text-muted-foreground" size={20} />
+            <Text className="text-2xl font-bold text-foreground">Evolução</Text>
+            <Award className="text-muted-foreground" size={24} />
           </View>
 
           {/* VO2max Chart */}
           <View className="bg-card rounded-2xl p-5 border border-border mb-4">
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-semibold text-foreground">VO₂máx (ml/kg/min)</Text>
-              <Text className="text-primary font-bold">48.5</Text>
+              <Text className="text-base font-semibold text-foreground">VO₂máx (ml/kg/min)</Text>
+              <Text className="text-primary text-lg font-bold">48.5</Text>
             </View>
             <SimpleBarChart 
               data={historyData} 
@@ -207,8 +213,8 @@ export default function AnalysisScreen() {
           {/* Pace Chart */}
           <View className="bg-card rounded-2xl p-5 border border-border mb-4">
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-semibold text-foreground">Pace Médio (min/km)</Text>
-              <Text className="text-yellow-400 font-bold">5:06</Text>
+              <Text className="text-base font-semibold text-foreground">Pace Médio (min/km)</Text>
+              <Text className="text-yellow-400 text-lg font-bold">5:06</Text>
             </View>
             <SimpleBarChart 
               data={historyData.map(d => ({...d, paceVal: parseFloat(d.pace.replace(':', '.'))}))} 
@@ -220,8 +226,8 @@ export default function AnalysisScreen() {
           {/* Time Chart */}
           <View className="bg-card rounded-2xl p-5 border border-border">
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-semibold text-foreground">Tempo Total (min)</Text>
-              <Text className="text-blue-400 font-bold">25:30</Text>
+              <Text className="text-base font-semibold text-foreground">Tempo Total (min)</Text>
+              <Text className="text-blue-400 text-lg font-bold">25:30</Text>
             </View>
             <SimpleBarChart 
               data={historyData.map(d => ({...d, timeVal: parseFloat(d.time.replace(':', '.'))}))} 
@@ -232,17 +238,18 @@ export default function AnalysisScreen() {
         </View>
 
         {/* Projection Card */}
-        <View className="bg-gradient-to-r from-card to-secondary rounded-2xl p-6 border border-border">
-          <View className="flex-row items-center gap-3 mb-3">
-            <Zap className="text-yellow-400" size={24} />
-            <Text className="text-lg font-bold text-foreground">Projeção de Maratona</Text>
+        <View className="bg-gradient-to-r from-card to-secondary rounded-2xl p-6 border border-border items-center justify-center">
+          <View className="flex-row items-center justify-center gap-3 mb-3">
+            <Zap className="text-yellow-400" size={28} />
+            <Text className="text-xl font-bold text-foreground">Projeção de Maratona</Text>
           </View>
-          <Text className="text-3xl font-bold text-foreground mb-2">3h 45min</Text>
-          <Text className="text-muted-foreground text-sm">
+          <Text className="text-3xl font-bold text-foreground mb-2 text-center">3h 45min</Text>
+          <Text className="text-muted-foreground text-base text-center">
             Baseado no seu VO₂máx atual e histórico de treinos nas zonas Z2-Z4.
           </Text>
         </View>
 
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

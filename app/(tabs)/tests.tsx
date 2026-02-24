@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Plus, Calendar, Clock, Zap, Trash2, X, ChevronDown } from 'lucide-react-native';
+import { Plus, Calendar, Clock, Zap, Trash2, X, ChevronDown, Pencil } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Types
 type TestResult = {
   id: string;
-  distance: string; // "5k", "10k", "21k", "42k"
-  time: string; // "mm:ss"
+  distance: string; // "12 min" | "10 km"
+  time: string; // "hh:mm:ss" ou "mm:ss"
   date: string;
   weight: number;
   vo2max: number;
@@ -20,7 +20,7 @@ type TestResult = {
 const initialTests: TestResult[] = [
   {
     id: '1',
-    distance: '10k',
+    distance: '10 km',
     time: '48:30',
     date: '12 Out 2023',
     weight: 72,
@@ -29,8 +29,8 @@ const initialTests: TestResult[] = [
   },
   {
     id: '2',
-    distance: '5k',
-    time: '23:15',
+    distance: '12 min',
+    time: '12:00',
     date: '05 Set 2023',
     weight: 73,
     vo2max: 45.2,
@@ -38,7 +38,7 @@ const initialTests: TestResult[] = [
   },
   {
     id: '3',
-    distance: '21k',
+    distance: '10 km',
     time: '1:45:00',
     date: '20 Ago 2023',
     weight: 74,
@@ -47,53 +47,91 @@ const initialTests: TestResult[] = [
   },
 ];
 
-const distanceOptions = ['5k', '10k', '21k', '42k'];
+const distanceOptions = ['12 min', '10 km'];
 
 export default function TestsScreen() {
   const [tests, setTests] = useState<TestResult[]>(initialTests);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  
+  const [editingTestId, setEditingTestId] = useState<string | null>(null);
+
   // Form State
   const [formData, setFormData] = useState({
-    distance: '10k',
+    distance: '10 km',
     time: '',
     date: '',
     weight: '',
   });
 
+  const openNewTestModal = () => {
+    setEditingTestId(null);
+    setFormData({ distance: '10 km', time: '', date: '', weight: '' });
+    setIsModalVisible(true);
+  };
+
+  const openEditTestModal = (test: TestResult) => {
+    setEditingTestId(test.id);
+    setFormData({
+      distance: test.distance,
+      time: test.time,
+      date: test.date,
+      weight: String(test.weight),
+    });
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setEditingTestId(null);
+    setFormData({ distance: '10 km', time: '', date: '', weight: '' });
+  };
+
+  // Distância em km para cálculos: "10 km" -> 10; "12 min" (Cooper) usa tempo fixo.
+  const getDistKm = (dist: string): number => {
+    if (dist === '10 km') return 10;
+    if (dist === '12 min') return 2.5; // placeholder Cooper: distância percorrida em 12 min (ajustar com campo no formulário se necessário)
+    return 10;
+  };
+
+  // Converte tempo em "hh:mm:ss" ou "mm:ss" para total em segundos.
+  const parseTimeToSeconds = (timeStr: string): number => {
+    const parts = timeStr.trim().split(':').map(Number);
+    if (parts.length === 3) {
+      const [h, m, s] = parts;
+      return (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
+    }
+    if (parts.length === 2) {
+      const [m, s] = parts;
+      return (m || 0) * 60 + (s || 0);
+    }
+    return 0;
+  };
+
   // Helper: Calculate VO2max (Simplified Mock Logic based on distance/time)
   const calculateVO2max = (dist: string, timeStr: string, weight: number): number => {
-    // This is a placeholder calculation. In a real app, use the specific Cooper formula
-    // or the appropriate formula for each distance mentioned in the prompt.
-    const [mins, secs] = timeStr.split(':').map(Number);
-    const totalMinutes = mins + (secs || 0) / 60;
-    const distKm = parseInt(dist);
-    
-    // Mock calculation for demo purposes
+    const totalSeconds = parseTimeToSeconds(timeStr);
+    const totalMinutes = totalSeconds / 60;
+    const distKm = getDistKm(dist);
     const pace = totalMinutes / distKm;
-    const estimatedVO2 = 60 + (10 / pace) - (weight * 0.05); 
+    const estimatedVO2 = 60 + (10 / pace) - (weight * 0.05);
     return parseFloat(estimatedVO2.toFixed(1));
   };
 
-  const handleAddTest = () => {
+  const handleSaveTest = () => {
     if (!formData.time || !formData.date || !formData.weight) {
       Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
 
     const vo2max = calculateVO2max(formData.distance, formData.time, parseFloat(formData.weight));
-    
-    // Calculate Pace
-    const [mins, secs] = formData.time.split(':').map(Number);
-    const distKm = parseInt(formData.distance);
-    const totalSeconds = (mins * 60) + (secs || 0);
+    const totalSeconds = parseTimeToSeconds(formData.time);
+    const distKm = getDistKm(formData.distance);
     const paceSeconds = totalSeconds / distKm;
     const paceMins = Math.floor(paceSeconds / 60);
     const paceSecs = Math.round(paceSeconds % 60);
     const paceStr = `${paceMins}'${paceSecs.toString().padStart(2, '0')}"`;
 
-    const newTest: TestResult = {
-      id: Date.now().toString(),
+    const payload: TestResult = {
+      id: editingTestId ?? Date.now().toString(),
       distance: formData.distance,
       time: formData.time,
       date: formData.date,
@@ -102,9 +140,12 @@ export default function TestsScreen() {
       pace: paceStr,
     };
 
-    setTests([newTest, ...tests]);
-    setIsModalVisible(false);
-    setFormData({ distance: '10k', time: '', date: '', weight: '' });
+    if (editingTestId) {
+      setTests(tests.map((t) => (t.id === editingTestId ? payload : t)));
+    } else {
+      setTests([payload, ...tests]);
+    }
+    closeModal();
   };
 
   const handleDelete = (id: string) => {
@@ -165,9 +206,14 @@ export default function TestsScreen() {
                     </View>
                     <Text className="text-gray-400 text-sm">{test.date}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => handleDelete(test.id)}>
-                    <Trash2 size={18} color="#ff4444" />
-                  </TouchableOpacity>
+                  <View className="flex-row items-center gap-4">
+                    <TouchableOpacity onPress={() => openEditTestModal(test)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                      <Pencil size={20} color="#00ff88" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDelete(test.id)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                      <Trash2 size={20} color="#ff4444" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 <View className="flex-row gap-6">
@@ -205,7 +251,7 @@ export default function TestsScreen() {
       {/* Floating Action Button */}
       <TouchableOpacity
         className="absolute bottom-24 right-6 bg-[#00ff88] rounded-full p-4 shadow-lg shadow-[#00ff88]/30"
-        onPress={() => setIsModalVisible(true)}
+        onPress={openNewTestModal}
       >
         <Plus size={28} color="#000000" strokeWidth={2.5} />
       </TouchableOpacity>
@@ -251,10 +297,10 @@ export default function TestsScreen() {
 
               {/* Time Input */}
               <View>
-                <Text className="text-gray-400 text-sm mb-2 font-medium">Tempo (mm:ss)</Text>
+                <Text className="text-gray-400 text-sm mb-2 font-medium">Tempo (hh:mm:ss ou mm:ss)</Text>
                 <TextInput
                   className="bg-[#2a2a2a] text-white rounded-xl px-4 py-3 border border-[#3a3a3a] text-lg"
-                  placeholder="Ex: 48:30"
+                  placeholder="Ex: 1:48:30 ou 48:30"
                   placeholderTextColor="#666"
                   value={formData.time}
                   onChangeText={(text) => setFormData({ ...formData, time: text })}
@@ -288,14 +334,16 @@ export default function TestsScreen() {
 
               {/* Submit Button */}
               <TouchableOpacity 
-                onPress={handleAddTest}
+                onPress={handleSaveTest}
                 className="mt-4"
               >
                 <LinearGradient
                   colors={['#00ff88', '#00cc6a']}
                   className="rounded-xl py-4 items-center"
                 >
-                  <Text className="text-black font-bold text-lg">Salvar Teste</Text>
+                  <Text className="text-black font-bold text-lg">
+                    {editingTestId ? 'Salvar alterações' : 'Salvar Teste'}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>

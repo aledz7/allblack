@@ -14,50 +14,45 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#000000', // Pure Black
-          borderTopColor: '#2a2a2a',  // Subtle border
-          height: 60,
+          backgroundColor: '#0a0a0a',
+          borderTopColor: '#2a2a2a',
+          height: 64,
           paddingBottom: 10,
           paddingTop: 10,
         },
-        tabBarActiveTintColor: '#00ff88', // Neon Green
-        tabBarInactiveTintColor: '#666666', // Gray
+        tabBarActiveTintColor: '#00ff88',
+        tabBarInactiveTintColor: '#e0e0e0',
+        tabBarLabelStyle: { fontSize: 13, fontWeight: '700' },
+        tabBarIconStyle: { marginBottom: -2 },
+        tabBarShowLabel: true,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Home color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <Home color={color} size={24} />,
         }}
       />
       <Tabs.Screen
         name="tests"
         options={{
           title: 'Testes',
-          tabBarIcon: ({ color, size }) => (
-            <Activity color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <Activity color={color} size={24} />,
         }}
       />
       <Tabs.Screen
         name="analysis"
         options={{
           title: 'Análise',
-          tabBarIcon: ({ color, size }) => (
-            <BarChart2 color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <BarChart2 color={color} size={24} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <User color={color} size={24} />,
         }}
       />
     </Tabs>
